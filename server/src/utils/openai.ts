@@ -211,7 +211,7 @@ const executeTool = async (
 
   console.log("tool arguments", tool.function.arguments);
   // list of supported functions.
-  Object.entries(supportedFunctions).map(([key, value]) => console.log(value.function.name))
+  Object.entries(supportedFunctions).map(([key, value]) => console.log(value.fn.name))
   const toolFunction = supportedFunctions[tool.function.name];
 
   if (!toolFunction) {

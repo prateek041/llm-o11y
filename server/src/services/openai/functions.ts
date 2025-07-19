@@ -8,7 +8,7 @@ export interface IFunctionType {
 
 const getEdgesFunc = async (args: string): Promise<string> => {
   const edges = await dataService.GetEdges()
-  return edges
+  return JSON.stringify(edges)
 }
 
 const GetEdgesFunc: IFunctionType = {
