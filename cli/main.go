@@ -1,3 +1,4 @@
+// File: main.go
 package main
 
 import (
@@ -42,27 +43,25 @@ func main() {
 		// Call the function to handle the streaming chat
 		err := streamChatResponse(userInput)
 		if err != nil {
-			// Print errors in a noticeable way but don't crash the program
 			log.Printf("ERROR: %v\n", err)
 		}
 	}
 }
 
-// streamChatResponse handles the entire process of sending a message
-// and processing the streaming SSE response.
 func streamChatResponse(message string) error {
+	// 1. Prepare the request body
 	requestBody, err := json.Marshal(map[string]string{"content": message})
 	if err != nil {
 		return fmt.Errorf("could not marshal request body: %w", err)
 	}
 
-	// 2. Create a new HTTP POST request
+	// 2. Create the HTTP request
 	req, err := http.NewRequest("POST", chatServerURL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "text/event-stream") // Crucial for telling the server we want an SSE stream
+	req.Header.Set("Accept", "text/event-stream")
 
 	// 3. Execute the request
 	client := &http.Client{}
@@ -76,41 +75,45 @@ func streamChatResponse(message string) error {
 		return fmt.Errorf("server returned non-200 status code: %s", resp.Status)
 	}
 
-	// 4. Process the streaming response line-by-line
+	// 4. Process the stream
 	scanner := bufio.NewScanner(resp.Body)
-	fmt.Print("AI: ") // Print the prompt for the AI's response once
+	fmt.Print("AI: ")
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// Ignore empty keep-alive lines
 		if line == "" {
 			continue
 		}
 
-		// Check if the line is an SSE data line (it must start with "data: ")
-		if strings.HasPrefix(line, "data: ") {
-			// Get the JSON part of the line by stripping the prefix
-			jsonData := strings.TrimPrefix(line, "data: ")
+		// <<< THE ROBUST PARSING LOGIC STARTS HERE >>>
+		// A single line from the server might contain multiple events.
+		// We split the line by the "data: " delimiter. This will separate all potential JSON payloads.
+		// Example: "event:{...}data:{json1}data:{json2}" becomes ["event:{...}", "{json1}", "{json2}"]
+		parts := strings.Split(line, "data: ")
 
+		// We iterate over the resulting parts.
+		for _, part := range parts {
+			// A valid JSON payload will start with '{'. We ignore any other parts
+			// (like the junk "event:{...}" part at the beginning).
+			if !strings.HasPrefix(part, "{") {
+				continue
+			}
+
+			// The Go JSON decoder is smart enough to stop parsing when it finds a
+			// complete object, so it can handle `{"key":"value"}event:{...}` correctly.
 			var chunk SSEChunk
-			// Try to unmarshal the JSON into our struct
-			if err := json.Unmarshal([]byte(jsonData), &chunk); err == nil {
-				// We only care about printing the "content" type chunks to the user.
-				// This filters out other events like "thinking", "done", etc.
+			if err := json.Unmarshal([]byte(part), &chunk); err == nil {
+				// Only print the content if the type is "content".
 				if chunk.Type == "content" {
 					fmt.Printf("%s", chunk.Content)
 				}
 			}
-			// If unmarshaling fails, we just ignore that line and continue.
 		}
 	}
 
-	// This prints a final newline after the AI has finished speaking,
-	// so the user's next prompt starts on a fresh line.
-	fmt.Println()
+	fmt.Println() // Final newline after the stream ends.
 
-	// Check for any errors that might have occurred during scanning (e.g., connection closed unexpectedly)
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error reading stream from server: %w", err)
 	}
