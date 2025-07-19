@@ -11,12 +11,24 @@ const getEdgesFunc = async (args: string): Promise<string> => {
   return JSON.stringify(edges)
 }
 
+const getSchemaFunc = async (args: string): Promise<string> => {
+  const schema = await dataService.GetSchema()
+  return JSON.stringify(schema)
+}
+
 const GetEdgesFunc: IFunctionType = {
   name: "getEdges",
   fn: getEdgesFunc,
   functionalityType: "INFRA"
 }
 
+const GetSchemaFunc: IFunctionType = {
+  name: "getSchema",
+  fn: getSchemaFunc,
+  functionalityType: "INFRA"
+}
+
 export const supportedFunctions: Record<string, IFunctionType> = {
-  getEdges: GetEdgesFunc
+  getEdges: GetEdgesFunc,
+  getSchema: GetSchemaFunc
 };

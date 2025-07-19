@@ -1,6 +1,5 @@
 import getOpenAIClient from "../services/openai/client";
 import { Assistants, type Assistant, type AssistantCreateParams, type AssistantStreamEvent, type ThreadCreateParams } from "openai/resources/beta.js";
-import type { AzureOpenAI } from "openai";
 import { createEventMessage, createStreamContent, type StreamHandler } from "./http";
 import type { Message, MessageCreateParams, RequiredActionFunctionToolCall, RunSubmitToolOutputsParams } from "openai/resources/beta/threads.js";
 import { infoLogger } from "./logger";
@@ -9,6 +8,7 @@ import z from "zod";
 import { zodResponseFormat } from "openai/helpers/zod.js";
 import { supportedFunctions } from "../services/openai/functions";
 import { AssistantStream } from "openai/lib/AssistantStream";
+import type { AzureOpenAI } from "openai";
 
 const client = getOpenAIClient();
 const layer = "SERVICE";
@@ -74,6 +74,7 @@ async function processStream(
   recursionDepth = 0
 ): Promise<void> {
   infoLogger({ message: "processing stream", status: "INFO", layer, name });
+  console.log("threadId", threadId)
   const MAX_RECURSION_DEPTH = 10;
 
   // terminate processing if maximum recursion depth passes 10.
@@ -178,14 +179,12 @@ async function handleToolAction(
     })
   );
 
-  const newStream = client.beta.threads.runs.submitToolOutputsStream(
-    threadId,
-    event.data.id,
-    {
-      stream: true,
-      tool_outputs: toolOutputs,
-    }
-  );
+  console.log('threadId', threadId)
+  console.log('event', event)
+  console.log('event data', event.data)
+  console.log('event data id', event.data.id)
+
+  const newStream = client.beta.threads.runs.submitToolOutputsStream(event.data.id, { thread_id: threadId, tool_outputs: toolOutputs, stream: true })
 
   if (!newStream) {
     throw new Error("unable to start a new run");

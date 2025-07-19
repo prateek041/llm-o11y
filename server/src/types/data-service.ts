@@ -12,3 +12,19 @@ export interface GetEdgesResponse {
   edges: GremlinEdge[];
   total: number;
 }
+
+export interface SchemaVertices {
+  [vertexLabel: string]: string[];
+}
+
+export interface SchemaEdges {
+  [edgeLabel: string]: {
+    from: string[];
+    to: string[];
+  };
+}
+
+export interface GetSchemaResponse {
+  vertices: SchemaVertices;
+  edges: SchemaEdges;
+}

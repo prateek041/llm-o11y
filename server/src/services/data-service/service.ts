@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import type { GetEdgesResponse } from '../../types/data-service';
+import type { GetEdgesResponse, GetSchemaResponse } from '../../types/data-service';
 import apiClient from '../../lib/apiClient';
 
 /**
@@ -39,7 +39,36 @@ async function getEdges(): Promise<GetEdgesResponse> {
   }
 }
 
+/**
+ * Fetches the entire graph schema from the data-service.
+ * @returns A promise that resolves with the graph schema object.
+ * @throws An error if the API call fails.
+ */
+async function getSchema(): Promise<GetSchemaResponse> {
+  try {
+    // Make a GET request to the /schema endpoint
+    const response = await apiClient.get<GetSchemaResponse>('/schema');
+    return response.data;
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response) {
+      console.error(
+        `Data service returned an error: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error(
+        `No response received from data service at ${apiClient.defaults.baseURL}/schema`
+      );
+    } else {
+      console.error('Error setting up request to data service:', error.message);
+    }
+    throw new Error('Failed to fetch schema from the data service.');
+  }
+}
+
 export const dataService = {
   GetEdges: (): Promise<GetEdgesResponse> => getEdges(),
+  GetSchema: (): Promise<GetSchemaResponse> => getSchema()
 };
 

@@ -21,6 +21,13 @@ app.get('/edges', async (req: Request, res: Response) => {
   res.send(response)
 })
 
+app.get('/schema', async (req: Request, res: Response) => {
+  console.log("getting edges")
+  const response = await dataService.GetSchema()
+  console.log("response", response)
+  res.send(response)
+})
+
 app.listen(port, () => {
   console.log("Server Listening to port", port)
 })
