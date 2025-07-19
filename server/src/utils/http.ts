@@ -283,7 +283,7 @@ export const createStreamStart = (): Omit<StartMessage, "requestId"> => {
 export type StreamHandler = {
   onMessage: (message: Omit<StreamMessage, "requestId">) => void;
   onError: (error: AppError) => void;
-  onComplete: () => void;
+  onComplete: (threadId: string) => void;
   onStateChange: (event: Omit<StateChangeMessage, "requestId">) => void
 };
 
@@ -341,12 +341,16 @@ export const createSSEHandler = (
     res.write(`data: ${JSON.stringify(errorMessage)}\n\n`);
     res.end();
   },
-  onComplete: () => {
-    const doneMessage = doneMessageSchema.parse({
+
+  onComplete: (threadId: string) => {
+    const doneMessage = {
       type: "done",
-      timestamp: new Date().toISOString(),
+      timeStamp: new Date().toISOString(),
       requestId,
-    });
+      threadId
+    }
+
+    console.log("==========> done message", doneMessage)
 
     res.write(`data: ${JSON.stringify(doneMessage)}\n\n`);
     res.end();

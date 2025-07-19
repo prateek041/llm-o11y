@@ -8,6 +8,7 @@ import { InfraAssistantId } from "./constants";
 const client = getOpenAIClient();
 
 interface IRunRequest {
+  threadId?: string
   content: string
 }
 
@@ -61,6 +62,7 @@ const streamComplete = async (
   handler: StreamHandler,
   assistantId?: string
 ) => {
+  let threadId = data.threadId
   try {
     infoLogger({
       message: "creating a streamable run",
@@ -73,10 +75,14 @@ const streamComplete = async (
 
     // gettingthe assistant id
     let assistant_id = assistantId ? assistantId : (InfraAssistantId as string);
+    console.log("FINAL CHECK", threadId)
 
     // check if chat exists.
     // const response = await userProfileStore.GetChat(data.userId, data.chatId);
-    const threadId = await openAIUtils.CreateEmptyThread()
+    if (!threadId) {
+      console.log("NO THREAD ID FOUND, CREATING NEW")
+      threadId = await openAIUtils.CreateEmptyThread()
+    }
     // if (!response.success) {
     //   infoLogger({
     //     message: "chat does not exist",

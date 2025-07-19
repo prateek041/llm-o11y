@@ -102,7 +102,7 @@ async function processStream(
           layer,
           name,
         });
-        handler.onComplete();
+        handler.onComplete(threadId);
         // save messages in the database, we can have a failover for syncinc thread messages with database.
         return;
 

@@ -14,9 +14,12 @@ import (
 
 const chatServerURL = "http://localhost:9090/chat"
 
+var currentThreadId string
+
 type SSEChunk struct {
-	Type    string `json:"type"`
-	Content string `json:"content"`
+	Type     string `json:"type"`
+	Content  string `json:"content"`
+	ThreadId string `json:"threadid"`
 }
 
 func main() {
@@ -50,7 +53,15 @@ func main() {
 
 func streamChatResponse(message string) error {
 	// 1. Prepare the request body
-	requestBody, err := json.Marshal(map[string]string{"content": message})
+	requestData := map[string]string{
+		"content": message,
+	}
+
+	if currentThreadId != "" {
+		requestData["threadId"] = currentThreadId
+	}
+
+	requestBody, err := json.Marshal(requestData)
 	if err != nil {
 		return fmt.Errorf("could not marshal request body: %w", err)
 	}
@@ -86,7 +97,6 @@ func streamChatResponse(message string) error {
 			continue
 		}
 
-		// <<< THE ROBUST PARSING LOGIC STARTS HERE >>>
 		// A single line from the server might contain multiple events.
 		// We split the line by the "data: " delimiter. This will separate all potential JSON payloads.
 		// Example: "event:{...}data:{json1}data:{json2}" becomes ["event:{...}", "{json1}", "{json2}"]
@@ -107,6 +117,9 @@ func streamChatResponse(message string) error {
 				// Only print the content if the type is "content".
 				if chunk.Type == "content" {
 					fmt.Printf("%s", chunk.Content)
+				}
+				if chunk.Type == "done" {
+					currentThreadId = chunk.ThreadId
 				}
 			}
 		}

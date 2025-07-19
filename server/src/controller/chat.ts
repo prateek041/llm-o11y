@@ -51,6 +51,7 @@ const chat = async (req: Request, res: Response) => {
   // }
 
   // create streamable run.
-  const { content } = req.body;
-  await openAIService.StreamComplete({ content }, handler);
+  const { threadId, content } = req.body;
+  console.log("threadId", threadId)
+  await openAIService.StreamComplete({ content, threadId }, handler);
 };
