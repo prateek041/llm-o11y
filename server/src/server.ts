@@ -17,14 +17,17 @@ app.use("/chat", chatRouter)
 app.get('/edges', async (req: Request, res: Response) => {
   console.log("getting edges")
   const response = await dataService.GetEdges()
-  console.log("response", response)
+  res.send(response)
+})
+app.post("/query", async (req: Request, res: Response) => {
+  console.log("running a query")
+  const response = await dataService.RunQuery(req.body.query)
   res.send(response)
 })
 
 app.get('/schema', async (req: Request, res: Response) => {
   console.log("getting edges")
   const response = await dataService.GetSchema()
-  console.log("response", response)
   res.send(response)
 })
 

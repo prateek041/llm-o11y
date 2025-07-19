@@ -16,6 +16,12 @@ const getSchemaFunc = async (args: string): Promise<string> => {
   return JSON.stringify(schema)
 }
 
+const runQueryFunc = async (query: string): Promise<string> => {
+  const jsonQuery = JSON.parse(query)
+  const queryResponse = await dataService.RunQuery(jsonQuery.query)
+  return JSON.stringify(queryResponse)
+}
+
 const GetEdgesFunc: IFunctionType = {
   name: "getEdges",
   fn: getEdgesFunc,
@@ -28,7 +34,14 @@ const GetSchemaFunc: IFunctionType = {
   functionalityType: "INFRA"
 }
 
+const RunQueryFunc: IFunctionType = {
+  name: "query",
+  fn: runQueryFunc,
+  functionalityType: "INFRA"
+}
+
 export const supportedFunctions: Record<string, IFunctionType> = {
   getEdges: GetEdgesFunc,
-  getSchema: GetSchemaFunc
+  getSchema: GetSchemaFunc,
+  query: RunQueryFunc
 };

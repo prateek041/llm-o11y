@@ -75,12 +75,10 @@ const streamComplete = async (
 
     // gettingthe assistant id
     let assistant_id = assistantId ? assistantId : (InfraAssistantId as string);
-    console.log("FINAL CHECK", threadId)
 
     // check if chat exists.
     // const response = await userProfileStore.GetChat(data.userId, data.chatId);
     if (!threadId) {
-      console.log("NO THREAD ID FOUND, CREATING NEW")
       threadId = await openAIUtils.CreateEmptyThread()
     }
     // if (!response.success) {

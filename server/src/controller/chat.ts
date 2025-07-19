@@ -30,28 +30,7 @@ const chat = async (req: Request, res: Response) => {
   setSSEHeaders(res);
   // create stream handlers.
   const handler = createSSEHandler(res, requestId);
-  // const { userId } = getAuth(req);
-  // if (!userId) {
-  //   const response = {
-  //     success: false,
-  //     error: createError(HTTP.STATUS.UNAUTHORIZED, "Unauthorized"),
-  //   };
-  //   res.status(HTTP.STATUS.UNAUTHORIZED).json(response);
-  //   return;
-  // }
-  // const validatedObject = runCreateDTO.safeParse(req.body);
-  // if (!validatedObject.success) {
-  //   const err: AppError = {
-  //     code: HTTP.STATUS.BAD_REQUEST,
-  //     message: "invalid request",
-  //     timestamp: new Date().toISOString(),
-  //   };
-  //   // FIX: This probably needs to be checked.
-  //   return handler.onError(err);
-  // }
-
   // create streamable run.
   const { threadId, content } = req.body;
-  console.log("threadId", threadId)
   await openAIService.StreamComplete({ content, threadId }, handler);
 };

@@ -67,8 +67,31 @@ async function getSchema(): Promise<GetSchemaResponse> {
   }
 }
 
+async function runQuery(query: string): Promise<string> {
+  try {
+    const response = await apiClient.post<string>('/query', { query: query })
+    return JSON.stringify(response.data)
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response) {
+      console.error(
+        `Data service returned an error: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error(
+        `No response received from data service at ${apiClient.defaults.baseURL}/schema`
+      );
+    } else {
+      console.error('Error setting up request to data service:', error.message);
+    }
+    throw new Error('Failed to fetch schema from the data service.');
+  }
+}
+
 export const dataService = {
   GetEdges: (): Promise<GetEdgesResponse> => getEdges(),
-  GetSchema: (): Promise<GetSchemaResponse> => getSchema()
+  GetSchema: (): Promise<GetSchemaResponse> => getSchema(),
+  RunQuery: (query: string): Promise<string> => runQuery(query)
 };
 

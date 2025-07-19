@@ -102,7 +102,6 @@ func streamChatResponse(message string) error {
 		// Example: "event:{...}data:{json1}data:{json2}" becomes ["event:{...}", "{json1}", "{json2}"]
 		parts := strings.Split(line, "data: ")
 
-		// We iterate over the resulting parts.
 		for _, part := range parts {
 			// A valid JSON payload will start with '{'. We ignore any other parts
 			// (like the junk "event:{...}" part at the beginning).
