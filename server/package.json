@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch run src/server.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@senseii/types": "^1.2.52",
+    "@types/express": "^5.0.3",
+    "azure-openai": "^0.9.4",
+    "chalk": "^5.4.1",
+    "express": "^5.1.0",
+    "openai": "^5.10.1",
+    "zod": "^4.0.5"
+  }
+}
