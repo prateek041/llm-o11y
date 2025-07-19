@@ -26,7 +26,6 @@ const chat = async (req: Request, res: Response) => {
     name,
   });
   const requestId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
-  console.log("request body", req)
   // set headers
   setSSEHeaders(res);
   // create stream handlers.
