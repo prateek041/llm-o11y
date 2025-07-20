@@ -54,8 +54,15 @@ system responds.
 docker compose up --build
 ```
 
-Once everything starts running, run the cli (or build on your own). (There is
-a pre-built binary named `llm-observability`)
+- load the temporary data into the graph database.
+
+```shell
+
+curl --location --request POST 'http://localhost:9090/load'
+```
+
+- Once everything starts running, run the cli (or build on your own). (There is
+  a pre-built binary named `llm-observability`)
 
 ```shell
 ./llm-observability
