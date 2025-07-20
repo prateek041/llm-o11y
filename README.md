@@ -1,5 +1,7 @@
 # Talk to your infrastructure in natural language and diagnose
 
+https://github.com/user-attachments/assets/744a97ae-e59e-4fac-b371-18c37575d850
+
 This configuration consists of 4 components that replicate the working of the
 solution in a bigger context.
 
