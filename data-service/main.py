@@ -1,9 +1,7 @@
 import sys
-import json
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from gremlin_python.driver import client, serializer
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 GREMLIN_SERVER_URL = "ws://localhost:8182/gremlin"
@@ -71,37 +69,34 @@ def list_edges(gremlin_client):
 def show_schema(gremlin_client):
     """
     Discovers and returns the complete graph schema, including all vertex and edge properties.
-    This version is more robust than the original.
     """
-    # This query correctly gets all unique vertex labels. It remains unchanged.
+    # This query correctly gets all unique vertex labels.
     vertex_labels_query = "g.V().label().dedup().toList()"
     vertex_labels = gremlin_client.run_query(vertex_labels_query)
     vertices_schema = {}
-    
-    # --- FIX 1: Find ALL vertex properties, not just from one example ---
+
+    # Find ALL vertex properties.
     for label in sorted(vertex_labels):
-        # This new query looks at ALL vertices with a given label, gets ALL their
+        # This query looks at all vertices with a given label, gets all their
         # properties, extracts the key for each property, and returns the unique set.
-        # This avoids the .limit(1) issue and will find 'publicIpAddress'.
         props_query = f"g.V().hasLabel('{label}').properties().key().dedup().toList()"
         properties = gremlin_client.run_query(props_query)
         vertices_schema[label] = sorted(properties)
 
-    # This query correctly gets all unique edge labels. It remains unchanged.
+    # This query correctly gets all unique edge labels.
     edge_labels_query = "g.E().label().dedup().toList()"
     edge_labels = gremlin_client.run_query(edge_labels_query)
     edges_schema = {}
 
     for label in sorted(edge_labels):
-        # These queries for finding connections are correct and remain unchanged.
+        # The query for finding connections.
         from_query = f"g.E().hasLabel('{label}').outV().label().dedup().toList()"
         to_query = f"g.E().hasLabel('{label}').inV().label().dedup().toList()"
         from_types = gremlin_client.run_query(from_query)
         to_types = gremlin_client.run_query(to_query)
 
-        # --- FIX 2: Add discovery for edge properties ---
-        # This new query finds all unique property keys on the edges themselves.
-        # This is CRITICAL for finding the 'port' on 'allows_ingress'.
+        # Add discovery for edge properties
+        # This query finds all unique property keys on the edges themselves.
         edge_props_query = f"g.E().hasLabel('{label}').properties().key().dedup().toList()"
         edge_properties = gremlin_client.run_query(edge_props_query)
 
@@ -109,7 +104,7 @@ def show_schema(gremlin_client):
         edges_schema[label] = {
             "from": sorted(from_types),
             "to": sorted(to_types),
-            "properties": sorted(edge_properties) # Add the new properties list here
+            "properties": sorted(edge_properties)
         }
     return {"vertices": vertices_schema, "edges": edges_schema}
 
@@ -135,7 +130,7 @@ app = FastAPI(
     description="FastAPI server for JanusGraph operations.",
 )
 
-# Optional: Allow CORS for all origins (customize as needed)
+# NOTE: I know this is not safe :D
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

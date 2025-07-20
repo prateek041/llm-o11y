@@ -1,8 +1,5 @@
 g.V().drop().iterate();
 
-// --- Step 1: Create all vertices and store them in Groovy variables ---
-// The .next() at the end of each line forces the creation to happen immediately
-// and returns the created vertex, which we save.
 def cluster_asg = g.addV('AutoScalingGroup').property('name', 'app-cluster-asg').property('desiredCapacity', 2).property('instanceType', 't3.medium').next();
 def alb         = g.addV('LoadBalancer').property('type', 'application').property('dnsName', 'cluster-lb.us-east-1.elb.amazonaws.com').next();
 def db          = g.addV('RDSInstance').property('dbInstanceIdentifier', 'app-cluster-db').property('engine', 'mysql').next();
@@ -16,10 +13,6 @@ def lambda_role = g.addV('IAMRole').property('roleName', 'LambdaS3ReaderRole').p
 def node1       = g.addV('EC2Instance').property('instanceId', 'i-111').property('name', 'app-node-1').property('status', 'running').property('cpuUtilization', 65).next();
 def node2       = g.addV('EC2Instance').property('instanceId', 'i-222').property('name', 'app-node-2').property('status', 'running').property('cpuUtilization', 75).next();
 def bastion     = g.addV('EC2Instance').property('instanceId', 'i-333').property('name', 'bastion-host').property('status', 'stopped').property('publicIp', '54.1.2.3').next();
-
-// --- Step 2: Create all edges using the variables defined above ---
-// Each g.addE() command is now a short, separate, and safe traversal.
-// The .iterate() at the end executes each command.
 
 // Infrastructure management relationships
 g.addE('manages').from(cluster_asg).to(node1).iterate();
