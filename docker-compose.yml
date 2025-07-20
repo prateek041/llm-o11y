@@ -1,0 +1,71 @@
+services:
+  # The JanusGraph Database Service
+  janusgraph:
+    image: tinkerpop/gremlin-server:latest
+    container_name: janusgraph-db
+    ports:
+      - "8182:8182"
+    # volumes:
+    #   - janusgraph-data:/var/lib/janusgraph/data
+    #   - janusgraph-config:/etc/opt/janusgraph
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8182"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - llm_infra_net
+
+  # The Python Data Service
+  data-service:
+    build:
+      context: ./data-service # Path to the Dockerfile for this service
+      dockerfile: Dockerfile
+    container_name: data-service-api
+    ports:
+      - "8000:8000"
+    environment:
+      - GREMLIN_SERVER_URL=ws://janusgraph:8182/gremlin
+    depends_on:
+      - janusgraph
+    networks:
+      - llm_infra_net
+
+  # The Bun LLM Service
+  # This service talks to the data-service and the outside world.
+  server:
+    build:
+      context: ./server # Path to the Dockerfile for this service
+      dockerfile: Dockerfile
+    container_name: llm-service-api
+    ports:
+      - "9090:9090"
+    environment:
+      - DATA_SERVICE_BASE_URL=http://data-service:8000
+    depends_on:
+      - data-service
+    networks:
+      - llm_infra_net
+
+  # The Go CLI
+  cli:
+    build:
+      context: ./cli
+      dockerfile: Dockerfile
+    container_name: go-cli
+    depends_on:
+      - server
+    environment:
+      - CHAT_SERVER_URL=http://server:9090/chat
+    tty: true
+    stdin_open: true
+    networks:
+      - llm_infra_net
+
+networks:
+  llm_infra_net:
+    driver: bridge
+
+# volumes:
+#   janusgraph-data:
+#   janusgraph-config:

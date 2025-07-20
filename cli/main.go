@@ -13,7 +13,7 @@ import (
 	"github.com/pterm/pterm/putils"
 )
 
-const chatServerURL = "http://localhost:9090/chat"
+var chatServerURL = os.Getenv("CHAT_SERVER_URL")
 
 var currentThreadId string
 
@@ -24,6 +24,10 @@ type SSEChunk struct {
 }
 
 func main() {
+
+	if chatServerURL == "" {
+		chatServerURL = "http://localhost:9090/chat"
+	}
 	// Clear screen by printing empty lines
 	for i := 0; i < 50; i++ {
 		fmt.Println()

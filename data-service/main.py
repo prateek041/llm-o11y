@@ -3,8 +3,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from gremlin_python.driver import client, serializer
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
-GREMLIN_SERVER_URL = "ws://localhost:8182/gremlin"
+GREMLIN_SERVER_URL = os.getenv("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
 SEED_SCRIPT_PATH = "seed_data.groovy"
 
 
