@@ -56,7 +56,6 @@ const getStateChangeMessage = (event: AssistantStreamEvent): string => {
   if (event.event === "thread.run.requires_action") {
     return "running tools ...";
   }
-  console.log("status", event.event);
   return "processing ...";
 };
 
@@ -74,7 +73,6 @@ async function processStream(
   recursionDepth = 0
 ): Promise<void> {
   infoLogger({ message: "processing stream", status: "INFO", layer, name });
-  console.log("threadId", threadId)
   const MAX_RECURSION_DEPTH = 10;
 
   // terminate processing if maximum recursion depth passes 10.
@@ -134,7 +132,6 @@ async function processStream(
         handler.onMessage(createStreamContent(event.data.delta));
         break;
       default:
-        console.log(event.event);
         handler.onStateChange(createEventMessage(event));
     }
   }
@@ -178,11 +175,6 @@ async function handleToolAction(
       return await executeTool(callItem);
     })
   );
-
-  console.log('threadId', threadId)
-  console.log('event', event)
-  console.log('event data', event.data)
-  console.log('event data id', event.data.id)
 
   const newStream = client.beta.threads.runs.submitToolOutputsStream(event.data.id, { thread_id: threadId, tool_outputs: toolOutputs, stream: true })
 

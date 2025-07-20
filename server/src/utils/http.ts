@@ -350,8 +350,6 @@ export const createSSEHandler = (
       threadId
     }
 
-    console.log("==========> done message", doneMessage)
-
     res.write(`data: ${JSON.stringify(doneMessage)}\n\n`);
     res.end();
   },
@@ -362,7 +360,6 @@ export const createSSEHandler = (
       timestamp: new Date().toISOString(),
       requestId,
     }
-    console.log("writing this", eventMessage)
     res.write(`event: ${JSON.stringify(eventMessage)}`)
   }
 });
