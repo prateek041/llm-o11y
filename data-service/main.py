@@ -69,32 +69,49 @@ def list_edges(gremlin_client):
 
 
 def show_schema(gremlin_client):
-    """Discovers and returns the graph schema using robust queries."""
+    """
+    Discovers and returns the complete graph schema, including all vertex and edge properties.
+    This version is more robust than the original.
+    """
+    # This query correctly gets all unique vertex labels. It remains unchanged.
     vertex_labels_query = "g.V().label().dedup().toList()"
     vertex_labels = gremlin_client.run_query(vertex_labels_query)
     vertices_schema = {}
+    
+    # --- FIX 1: Find ALL vertex properties, not just from one example ---
     for label in sorted(vertex_labels):
-        props_query = f"g.V().hasLabel('{label}').limit(1).valueMap(true).toList()"
-        properties_list = gremlin_client.run_query(props_query)
-        if not properties_list:
-            properties = []
-        else:
-            properties = properties_list[0].keys()
-        filtered_props = sorted([p for p in properties if isinstance(p, str)])
-        vertices_schema[label] = filtered_props
+        # This new query looks at ALL vertices with a given label, gets ALL their
+        # properties, extracts the key for each property, and returns the unique set.
+        # This avoids the .limit(1) issue and will find 'publicIpAddress'.
+        props_query = f"g.V().hasLabel('{label}').properties().key().dedup().toList()"
+        properties = gremlin_client.run_query(props_query)
+        vertices_schema[label] = sorted(properties)
 
+    # This query correctly gets all unique edge labels. It remains unchanged.
     edge_labels_query = "g.E().label().dedup().toList()"
     edge_labels = gremlin_client.run_query(edge_labels_query)
     edges_schema = {}
+
     for label in sorted(edge_labels):
+        # These queries for finding connections are correct and remain unchanged.
         from_query = f"g.E().hasLabel('{label}').outV().label().dedup().toList()"
         to_query = f"g.E().hasLabel('{label}').inV().label().dedup().toList()"
         from_types = gremlin_client.run_query(from_query)
         to_types = gremlin_client.run_query(to_query)
-        edges_schema[label] = {"from": sorted(from_types), "to": sorted(to_types)}
 
+        # --- FIX 2: Add discovery for edge properties ---
+        # This new query finds all unique property keys on the edges themselves.
+        # This is CRITICAL for finding the 'port' on 'allows_ingress'.
+        edge_props_query = f"g.E().hasLabel('{label}').properties().key().dedup().toList()"
+        edge_properties = gremlin_client.run_query(edge_props_query)
+
+        # We now build the final schema object for the edge, including the properties.
+        edges_schema[label] = {
+            "from": sorted(from_types),
+            "to": sorted(to_types),
+            "properties": sorted(edge_properties) # Add the new properties list here
+        }
     return {"vertices": vertices_schema, "edges": edges_schema}
-
 
 def execute_raw_query(gremlin_client, query_string):
     """Executes a raw Gremlin query string and returns the results."""
@@ -131,6 +148,11 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     query: str
 
+
+@app.post('/clear')
+def clear_Graph():
+    with GremlinClient(GREMLIN_SERVER_URL) as gremlin_client:
+        return clear_graph(gremlin_client)
 
 @app.get("/edges")
 def get_edges():
