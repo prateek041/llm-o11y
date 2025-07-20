@@ -6,6 +6,11 @@ export interface IFunctionType {
   functionalityType: "INFRA"
 }
 
+const getVerticesFunc = async (args: string): Promise<string> => {
+  const vertices = await dataService.GetVertices()
+  return JSON.stringify(vertices)
+}
+
 const getEdgesFunc = async (args: string): Promise<string> => {
   const edges = await dataService.GetEdges()
   return JSON.stringify(edges)
@@ -20,6 +25,12 @@ const runQueryFunc = async (query: string): Promise<string> => {
   const jsonQuery = JSON.parse(query)
   const queryResponse = await dataService.RunQuery(jsonQuery.query)
   return JSON.stringify(queryResponse)
+}
+
+const GetVerticesFunc: IFunctionType = {
+  name: "getVertices",
+  fn: getVerticesFunc,
+  functionalityType: "INFRA"
 }
 
 const GetEdgesFunc: IFunctionType = {
@@ -43,5 +54,6 @@ const RunQueryFunc: IFunctionType = {
 export const supportedFunctions: Record<string, IFunctionType> = {
   getEdges: GetEdgesFunc,
   getSchema: GetSchemaFunc,
-  query: RunQueryFunc
+  query: RunQueryFunc,
+  getVertices: GetVerticesFunc
 };

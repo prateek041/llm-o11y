@@ -12,7 +12,7 @@ const openAIClient = new AzureOpenAI({
   endpoint: Endpoint,
   apiKey: ApiKey,
   apiVersion,
-  deployment: "gpt-4o"
+  deployment: "gpt-4.1"
 });
 
 export default function getOpenAIClient() {

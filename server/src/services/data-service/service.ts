@@ -80,18 +80,87 @@ async function runQuery(query: string): Promise<string> {
       );
     } else if (error.request) {
       console.error(
-        `No response received from data service at ${apiClient.defaults.baseURL}/schema`
+        `No response received from data service at ${apiClient.defaults.baseURL}/query`
       );
     } else {
       console.error('Error setting up request to data service:', error.message);
     }
-    throw new Error('Failed to fetch schema from the data service.');
+    throw new Error('Failed to run query on the data service.');
+  }
+}
+
+async function loadData(): Promise<string> {
+  try {
+    const response = await apiClient.post<string>("/load")
+    return JSON.stringify(response.data)
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response) {
+      console.error(
+        `Data service returned an error: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error(
+        `No response received from data service at ${apiClient.defaults.baseURL}/load`
+      );
+    } else {
+      console.error('Error setting up request to data service:', error.message);
+    }
+    throw new Error('Failed to load dummy data on the data service.');
+  }
+}
+
+async function clearGraph(): Promise<string> {
+  try {
+    const response = await apiClient.post<string>("/clear")
+    return JSON.stringify(response.data)
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response) {
+      console.error(
+        `Data service returned an error: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error(
+        `No response received from data service at ${apiClient.defaults.baseURL}/clear`
+      );
+    } else {
+      console.error('Error setting up request to data service:', error.message);
+    }
+    throw new Error('Failed to clear data on the data service.');
+  }
+}
+
+async function getVertices(): Promise<string> {
+  try {
+    const response = await apiClient.get<string>("/vertices")
+    return JSON.stringify(response.data)
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response) {
+      console.error(
+        `Data service returned an error: ${error.response.status}`,
+        error.response.data
+      );
+    } else if (error.request) {
+      console.error(
+        `No response received from data service at ${apiClient.defaults.baseURL}/vertices`
+      );
+    } else {
+      console.error('Error setting up request to data service:', error.message);
+    }
+    throw new Error('Failed to get vertices from the data service.');
   }
 }
 
 export const dataService = {
   GetEdges: (): Promise<GetEdgesResponse> => getEdges(),
   GetSchema: (): Promise<GetSchemaResponse> => getSchema(),
-  RunQuery: (query: string): Promise<string> => runQuery(query)
+  RunQuery: (query: string): Promise<string> => runQuery(query),
+  LoadData: (): Promise<string> => loadData(),
+  ClearGraph: (): Promise<string> => clearGraph(),
+  GetVertices: (): Promise<string> => getVertices(),
 };
 
